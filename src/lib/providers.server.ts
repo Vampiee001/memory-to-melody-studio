@@ -184,3 +184,107 @@ const genericDistributor: DistributorAdapter = {
 };
 
 export const distributors = { "distributor-api": genericDistributor } as const;
+
+// ---------- Beat provider ----------
+export interface BeatProvider {
+  id: string;
+  label: string;
+  isConfigured(): boolean;
+  generate(input: { prompt: string; lengthSec: number }): Promise<ArrayBuffer>;
+}
+
+const lyriaBeat: BeatProvider = {
+  id: "lovable-lyria-beat",
+  label: "Lovable AI music (Google Lyria, instrumental)",
+  isConfigured: () => !!process.env["LOVABLE_API_KEY"],
+  generate: ({ prompt, lengthSec }) =>
+    lyria.compose({ prompt: `${prompt}\nBackground beat / instrumental bed for a vocalist.`, lyrics: "", lengthSec, vocal: "Instrumental" }),
+};
+
+export const beatProviders = { "lovable-lyria-beat": lyriaBeat } as const;
+
+// ---------- Cover art provider ----------
+export interface CoverProvider {
+  id: string;
+  label: string;
+  isConfigured(): boolean;
+  generate(input: { prompt: string; reference?: { data: Uint8Array; mediaType: string; name: string } }): Promise<Uint8Array>;
+}
+
+const IMAGE_MODEL = "openai/gpt-image-2.5-sunburst";
+
+const lovableCover: CoverProvider = {
+  id: "lovable-image",
+  label: "Lovable AI image generation",
+  isConfigured: () => !!process.env["LOVABLE_API_KEY"],
+  async generate({ prompt, reference }) {
+    const key = process.env["LOVABLE_API_KEY"];
+    if (!key) throw new ProviderError(503, "No image provider is configured.");
+    let res: Response;
+    if (reference) {
+      const form = new FormData();
+      form.set("model", IMAGE_MODEL);
+      form.set("prompt", prompt);
+      form.set("size", "1024x1024");
+      form.set("quality", "medium");
+      form.append("image[]", new File([reference.data], reference.name, { type: reference.mediaType }));
+      res = await fetch(`${GATEWAY}/images/edits`, { method: "POST", headers: { Authorization: `Bearer ${key}` }, body: form });
+    } else {
+      res = await fetch(`${GATEWAY}/images/generations`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: IMAGE_MODEL, prompt, size: "1024x1024", quality: "medium" }),
+      });
+    }
+    if (!res.ok) {
+      let msg = "";
+      try {
+        const j = (await res.json()) as { error?: { message?: string }; message?: string };
+        msg = j.error?.message ?? j.message ?? "";
+      } catch {}
+      throw new ProviderError(res.status, friendly(res.status, msg || "Cover generation failed."));
+    }
+    const j = (await res.json()) as { data?: { b64_json?: string }[] };
+    const b64 = j.data?.[0]?.b64_json;
+    if (!b64) throw new ProviderError(502, "The image service returned no picture. Please try again.");
+    const bin = atob(b64);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  },
+};
+
+export const coverProviders = { "lovable-image": lovableCover } as const;
+
+// ---------- Mastering provider ----------
+export interface MasteringProvider {
+  id: string;
+  label: string;
+  isConfigured(): boolean;
+  /** Sends a signed URL of the source audio; returns mastered WAV bytes. */
+  master(input: { audioUrl: string; fileName: string }): Promise<ArrayBuffer>;
+}
+
+/** Generic REST adapter for a mastering service the owner has an account with.
+ *  Expects POST {audio_url, output_format:"wav"} -> audio/wav bytes. Adjust to the vendor's API. */
+const externalMastering: MasteringProvider = {
+  id: "mastering-api",
+  label: "External mastering service (bring your own account)",
+  isConfigured: () => !!process.env["MASTERING_API_URL"] && !!process.env["MASTERING_API_KEY"],
+  async master({ audioUrl, fileName }) {
+    const url = process.env["MASTERING_API_URL"];
+    const key = process.env["MASTERING_API_KEY"];
+    if (!url || !key) throw new ProviderError(503, "No mastering service is configured.");
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ audio_url: audioUrl, file_name: fileName, output_format: "wav" }),
+    });
+    if (!res.ok) throw new ProviderError(res.status, `Mastering service rejected the file (${res.status}).`);
+    const type = res.headers.get("content-type") ?? "";
+    if (!type.includes("audio")) throw new ProviderError(502, "Mastering service did not return audio.");
+    return await res.arrayBuffer();
+  },
+};
+
+export const masteringProviders = { "mastering-api": externalMastering } as const;
