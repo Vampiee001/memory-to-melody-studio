@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      playlist_items: {
+        Row: {
+          created_at: string
+          id: string
+          playlist_id: string
+          position: number
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          playlist_id: string
+          position?: number
+          project_id: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          playlist_id?: string
+          position?: number
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playlist_items_playlist_id_fkey"
+            columns: ["playlist_id"]
+            isOneToOne: false
+            referencedRelation: "playlists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playlist_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      playlists: {
+        Row: {
+          cover_path: string | null
+          created_at: string
+          description: string | null
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_path?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          cover_path?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       project_media: {
         Row: {
           created_at: string
@@ -66,11 +138,23 @@ export type Database = {
           audio_error: string | null
           audio_path: string | null
           audio_status: string
+          beat_error: string | null
+          beat_file_name: string | null
+          beat_mime: string | null
+          beat_path: string | null
+          beat_rights: Json
+          beat_source: string
+          beat_status: string
           concept: string | null
           consent: boolean
           consent_at: string | null
           context: string | null
+          cover_art_path: string | null
+          cover_error: string | null
           cover_path: string | null
+          cover_source: string | null
+          cover_status: string
+          cover_text: Json
           created_at: string
           distribution_status: string
           experience_summary: string | null
@@ -79,8 +163,14 @@ export type Database = {
           language: string | null
           length_sec: number | null
           lyrics: string | null
+          mastered_path: string | null
+          mastering_engine: string | null
+          mastering_error: string | null
+          mastering_source: string | null
+          mastering_status: string
           mood: string | null
           music_prompt: string | null
+          package_exported_at: string | null
           release: Json
           rights_checklist: Json
           stage: string
@@ -93,11 +183,23 @@ export type Database = {
           audio_error?: string | null
           audio_path?: string | null
           audio_status?: string
+          beat_error?: string | null
+          beat_file_name?: string | null
+          beat_mime?: string | null
+          beat_path?: string | null
+          beat_rights?: Json
+          beat_source?: string
+          beat_status?: string
           concept?: string | null
           consent?: boolean
           consent_at?: string | null
           context?: string | null
+          cover_art_path?: string | null
+          cover_error?: string | null
           cover_path?: string | null
+          cover_source?: string | null
+          cover_status?: string
+          cover_text?: Json
           created_at?: string
           distribution_status?: string
           experience_summary?: string | null
@@ -106,8 +208,14 @@ export type Database = {
           language?: string | null
           length_sec?: number | null
           lyrics?: string | null
+          mastered_path?: string | null
+          mastering_engine?: string | null
+          mastering_error?: string | null
+          mastering_source?: string | null
+          mastering_status?: string
           mood?: string | null
           music_prompt?: string | null
+          package_exported_at?: string | null
           release?: Json
           rights_checklist?: Json
           stage?: string
@@ -120,11 +228,23 @@ export type Database = {
           audio_error?: string | null
           audio_path?: string | null
           audio_status?: string
+          beat_error?: string | null
+          beat_file_name?: string | null
+          beat_mime?: string | null
+          beat_path?: string | null
+          beat_rights?: Json
+          beat_source?: string
+          beat_status?: string
           concept?: string | null
           consent?: boolean
           consent_at?: string | null
           context?: string | null
+          cover_art_path?: string | null
+          cover_error?: string | null
           cover_path?: string | null
+          cover_source?: string | null
+          cover_status?: string
+          cover_text?: Json
           created_at?: string
           distribution_status?: string
           experience_summary?: string | null
@@ -133,8 +253,14 @@ export type Database = {
           language?: string | null
           length_sec?: number | null
           lyrics?: string | null
+          mastered_path?: string | null
+          mastering_engine?: string | null
+          mastering_error?: string | null
+          mastering_source?: string | null
+          mastering_status?: string
           mood?: string | null
           music_prompt?: string | null
+          package_exported_at?: string | null
           release?: Json
           rights_checklist?: Json
           stage?: string

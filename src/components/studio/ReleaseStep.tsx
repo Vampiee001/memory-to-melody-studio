@@ -3,7 +3,7 @@ import { Check, Circle, Download, ImagePlus, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Project } from "@/lib/projects";
-import { buildReleaseChecklist, downloadText, isReleaseReady, releaseToCSV, type ReleaseMeta } from "@/lib/release";
+import { checklistForProject, downloadText, isReleaseReady, releaseToCSV, type ReleaseMeta } from "@/lib/release";
 import { LANGUAGES } from "@/lib/media";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,10 +23,7 @@ export function ReleaseStep({ project: p, onNext }: { project: Project; onNext: 
     if (p.cover_path) supabase.storage.from("covers").createSignedUrl(p.cover_path, 3600).then(({ data }) => setCover(data?.signedUrl ?? null));
   }, [p.cover_path]);
 
-  const items = buildReleaseChecklist({
-    release: r, lyrics: p.lyrics, audioReady: p.audio_status === "ready", coverPath: p.cover_path,
-    rights: (p.rights_checklist ?? {}) as Record<string, boolean>,
-  });
+  const items = checklistForProject(p, r);
   const ready = isReleaseReady(items);
   const save = (extra = {}) => update.mutateAsync({ release: r, ...extra });
 
