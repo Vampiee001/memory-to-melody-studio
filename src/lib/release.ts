@@ -36,8 +36,11 @@ export function buildReleaseChecklist(input: {
   release: ReleaseMeta;
   lyrics?: string | null;
   audioReady: boolean;
+  masteredReady?: boolean;
   coverPath?: string | null;
   rights: Record<string, boolean>;
+  beatSource?: string | null;
+  beatRights?: BeatRights | null;
 }): ChecklistItem[] {
   const r = input.release;
   const rightsDone = RIGHTS_ITEMS.every((i) => input.rights[i.key]);
@@ -48,10 +51,14 @@ export function buildReleaseChecklist(input: {
     { key: "language", label: "Language", done: !!r.language?.trim() },
     { key: "credits", label: "Songwriter credits", done: !!r.songwriters?.trim() },
     { key: "lyrics", label: "Final lyrics", done: !!input.lyrics?.trim() },
-    { key: "audio", label: "Mastered audio file", done: input.audioReady },
+    { key: "audio", label: "Song audio", done: input.audioReady },
+    { key: "master", label: "Mastered WAV file", done: input.audioReady && !!input.masteredReady },
     { key: "cover", label: "Cover art (3000×3000 recommended)", done: !!input.coverPath },
     { key: "rights", label: "Rights & licensing checklist", done: rightsDone },
     { key: "ownership", label: "Ownership declaration", done: !!r.ownership_declared },
+    ...(input.beatSource === "uploaded"
+      ? [{ key: "beat", label: "Uploaded beat rights declared", done: isBeatCleared(input.beatRights) }]
+      : []),
   ];
 }
 
@@ -96,4 +103,32 @@ export function downloadText(filename: string, content: string, type = "text/pla
   a.download = filename;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export type BeatRights = { kind?: "own" | "license" | "permission" | "generated" | "unsure"; confirmed?: boolean; notes?: string; provider?: string };
+
+export const BEAT_RIGHTS_OPTIONS = [
+  { value: "own", label: "I made this beat / I own it outright" },
+  { value: "license", label: "I have a license that allows commercial release" },
+  { value: "permission", label: "I have written permission from the producer" },
+  { value: "unsure", label: "I'm not sure / I found it online" },
+] as const;
+
+/** An uploaded beat is only cleared for release with an ownership/licence basis AND explicit confirmation. */
+export function isBeatCleared(r?: BeatRights | null) {
+  if (!r) return false;
+  if (r.kind === "generated") return true;
+  return (r.kind === "own" || r.kind === "license" || r.kind === "permission") && r.confirmed === true;
+}
+
+export const BEAT_ACCEPT = ["audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav", "audio/wave", "audio/mp4", "audio/x-m4a", "audio/m4a", "audio/aac"];
+export const BEAT_MAX_BYTES = 50 * 1024 * 1024;
+
+export function validateBeatFile(f: { name: string; type: string; size: number }): string | null {
+  const ext = f.name.toLowerCase().split(".").pop() ?? "";
+  const okType = BEAT_ACCEPT.includes(f.type) || ["mp3", "wav", "m4a", "aac"].includes(ext);
+  if (!okType) return "Use a WAV, MP3, M4A or AAC file.";
+  if (f.size > BEAT_MAX_BYTES) return "Audio files must be under 50 MB.";
+  if (f.size === 0) return "That file is empty.";
+  return null;
 }
