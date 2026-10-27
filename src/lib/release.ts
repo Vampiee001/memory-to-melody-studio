@@ -132,3 +132,16 @@ export function validateBeatFile(f: { name: string; type: string; size: number }
   if (f.size === 0) return "That file is empty.";
   return null;
 }
+
+type ProjectLike = {
+  release: unknown; lyrics: string | null; audio_status: string; mastering_status?: string | null;
+  cover_path: string | null; rights_checklist: unknown; beat_source?: string | null; beat_rights?: unknown;
+};
+export function checklistForProject(p: ProjectLike, release?: ReleaseMeta) {
+  return buildReleaseChecklist({
+    release: release ?? (p.release as ReleaseMeta), lyrics: p.lyrics, audioReady: p.audio_status === "ready",
+    masteredReady: p.mastering_status === "ready", coverPath: p.cover_path,
+    rights: (p.rights_checklist ?? {}) as Record<string, boolean>,
+    beatSource: p.beat_source ?? null, beatRights: (p.beat_rights ?? null) as BeatRights | null,
+  });
+}

@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { buildReleaseChecklist, isReleaseReady, type ReleaseMeta } from "@/lib/release";
+import { checklistForProject, isReleaseReady, type ReleaseMeta } from "@/lib/release";
 
 export const getIntegrationStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -128,10 +128,7 @@ export const submitToDistributor = createServerFn({ method: "POST" })
     const { data: p } = await sb.from("projects").select("*").eq("id", data.projectId).single();
     if (!p) return { ok: false as const, error: "Project not found" };
     const release = p.release as ReleaseMeta;
-    const items = buildReleaseChecklist({
-      release, lyrics: p.lyrics, audioReady: p.audio_status === "ready", coverPath: p.cover_path,
-      rights: p.rights_checklist as Record<string, boolean>,
-    });
+    const items = checklistForProject(p, release);
     if (p.distribution_status !== "ready" || !isReleaseReady(items))
       return { ok: false as const, error: "Release must be marked Ready to distribute first." };
     const audio = p.audio_path ? await sb.storage.from("audio").createSignedUrl(p.audio_path, 60 * 60 * 24) : null;
