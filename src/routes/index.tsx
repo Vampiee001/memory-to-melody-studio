@@ -44,7 +44,7 @@ function Home() {
             Upload the photos and clips that matter. We'll write an original song about them — and walk you through releasing it.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Button asChild variant="hero" size="lg" className="h-auto min-h-12 whitespace-normal py-3">
+            <Button asChild variant="hero" size="lg" className="h-auto min-h-12 w-full whitespace-normal py-3 sm:w-auto">
               <Link to={user ? "/studio/new" : "/auth"}><Sparkles /> Create a song from your memories</Link>
             </Button>
             <Button asChild variant="outline" size="lg">

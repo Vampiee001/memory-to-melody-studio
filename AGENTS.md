@@ -8,3 +8,9 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## MemoryMelody architecture
+- AI/music/distributor integrations live behind adapter registries in `src/lib/providers.server.ts`; server functions in `src/lib/songs.functions.ts` load them via dynamic import so secrets never reach the client.
+- Release/distribution rules (checklist, status transitions, CSV) are pure functions in `src/lib/release.ts`, covered by `src/test/release.test.ts`; keep UI and server using the same helpers.
+- User files are stored in private buckets (`media`, `audio`, `covers`) under `<userId>/<projectId>/...`; storage RLS depends on that first path segment.
+- Never fake integrations: unconfigured providers must show a setup state, and distribution requires an explicit final confirmation.
