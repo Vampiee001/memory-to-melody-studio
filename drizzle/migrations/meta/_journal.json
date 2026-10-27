@@ -8,6 +8,13 @@
       "when": 1793059945849,
       "tag": "0000_memorymelody_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793128811740,
+      "tag": "0001_beats_mastering_covers_playlists",
+      "breakpoints": true
     }
   ]
 }
