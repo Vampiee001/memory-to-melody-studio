@@ -39,7 +39,7 @@ export type SongBrief = {
   lengthSec: number;
   mediaSummary: string;
   images: { data: Uint8Array; mediaType: string }[];
-  keep?: { title?: string; concept?: string; experience_summary?: string };
+  keep?: { title?: string; concept?: string; experience_summary?: string } | undefined;
   mode: "all" | "lyrics" | "title" | "prompt";
 };
 
@@ -57,9 +57,9 @@ const lovableWriter: SongWriterProvider = {
   label: "Lovable AI (text + image understanding)",
   supportsImages: true,
   supportsVideo: false,
-  isConfigured: () => !!process.env.LOVABLE_API_KEY,
+  isConfigured: () => !!process.env["LOVABLE_API_KEY"],
   async writeSong(b) {
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new ProviderError(503, "No AI writing provider is configured.");
     const provider = createOpenAI({
       baseURL: GATEWAY,
@@ -113,7 +113,7 @@ Return:
   },
 };
 
-export const writers: Record<string, SongWriterProvider> = { [lovableWriter.id]: lovableWriter };
+export const writers = { "lovable-ai": lovableWriter } as const;
 
 // ---------- Music provider ----------
 export interface MusicProvider {
@@ -126,9 +126,9 @@ export interface MusicProvider {
 const lyria: MusicProvider = {
   id: "lovable-lyria",
   label: "Lovable AI music (Google Lyria)",
-  isConfigured: () => !!process.env.LOVABLE_API_KEY,
+  isConfigured: () => !!process.env["LOVABLE_API_KEY"],
   async compose({ prompt, lyrics, lengthSec, vocal }) {
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new ProviderError(503, "No music provider is configured.");
     const model = lengthSec <= 30 ? "google/lyria-3-clip-preview" : "google/lyria-3-pro-preview";
     const instrumental = vocal === "Instrumental";
@@ -152,7 +152,7 @@ const lyria: MusicProvider = {
   },
 };
 
-export const musicProviders: Record<string, MusicProvider> = { [lyria.id]: lyria };
+export const musicProviders = { "lovable-lyria": lyria } as const;
 
 // ---------- Distributor adapter ----------
 export interface DistributorAdapter {
@@ -167,10 +167,10 @@ export interface DistributorAdapter {
 const genericDistributor: DistributorAdapter = {
   id: "distributor-api",
   label: "Approved distributor API (bring your own account)",
-  isConfigured: () => !!process.env.DISTRIBUTOR_API_URL && !!process.env.DISTRIBUTOR_API_KEY,
+  isConfigured: () => !!process.env["DISTRIBUTOR_API_URL"] && !!process.env["DISTRIBUTOR_API_KEY"],
   async submit(pkg) {
-    const url = process.env.DISTRIBUTOR_API_URL;
-    const key = process.env.DISTRIBUTOR_API_KEY;
+    const url = process.env["DISTRIBUTOR_API_URL"];
+    const key = process.env["DISTRIBUTOR_API_KEY"];
     if (!url || !key) throw new ProviderError(503, "No distributor API is configured.");
     const res = await fetch(url, {
       method: "POST",
@@ -183,4 +183,4 @@ const genericDistributor: DistributorAdapter = {
   },
 };
 
-export const distributors: Record<string, DistributorAdapter> = { [genericDistributor.id]: genericDistributor };
+export const distributors = { "distributor-api": genericDistributor } as const;

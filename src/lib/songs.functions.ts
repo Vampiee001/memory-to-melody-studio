@@ -56,8 +56,8 @@ export const writeSong = createServerFn({ method: "POST" })
       const patch: Record<string, string> = {};
       if (data.mode === "all") Object.assign(patch, draft);
       if (data.mode === "lyrics") Object.assign(patch, { lyrics: draft.lyrics, music_prompt: draft.music_prompt });
-      if (data.mode === "title") patch.title = draft.title;
-      if (data.mode === "prompt") patch.music_prompt = draft.music_prompt;
+      if (data.mode === "title") patch["title"] = draft.title;
+      if (data.mode === "prompt") patch["music_prompt"] = draft.music_prompt;
       const { error: upErr } = await sb.from("projects").update({ ...patch, stage: "song" }).eq("id", p.id);
       if (upErr) throw upErr;
       return { ok: true as const };

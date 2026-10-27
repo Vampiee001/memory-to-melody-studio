@@ -25,7 +25,7 @@ export function SongStep({ project: p, onNext }: { project: Project; onNext: () 
   }, [p.title, p.concept, p.lyrics, p.music_prompt, p.experience_summary]);
 
   async function run(mode: Mode) {
-    if (!p.consent) return toast.error("Confirm media consent in step 1 first.");
+    if (!p.consent) { toast.error("Confirm media consent in step 1 first."); return; }
     setBusy(mode);
     try {
       const r = await write({ data: { projectId: p.id, mode } });

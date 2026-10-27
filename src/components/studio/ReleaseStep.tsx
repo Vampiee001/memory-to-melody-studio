@@ -39,7 +39,7 @@ export function ReleaseStep({ project: p, onNext }: { project: Project; onNext: 
     const { data: u } = await supabase.auth.getUser();
     const path = `${u.user!.id}/${p.id}/cover-${Date.now()}.${file.type === "image/png" ? "png" : "jpg"}`;
     const { error } = await supabase.storage.from("covers").upload(path, file, { contentType: file.type });
-    if (error) return toast.error("Cover upload failed");
+    if (error) { toast.error("Cover upload failed"); return; }
     if (p.cover_path) await supabase.storage.from("covers").remove([p.cover_path]);
     await update.mutateAsync({ cover_path: path });
     toast.success("Cover uploaded");
