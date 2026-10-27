@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as SpotifyRouteImport } from './routes/spotify'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedProjectIdRouteImport } from './routes/_authenticated/project.$id'
 import { Route as AuthenticatedStudioNewRouteImport } from './routes/_authenticated/studio.new'
 
@@ -35,6 +37,16 @@ const DemoRoute = DemoRouteImport.update({
   path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SpotifyRoute = SpotifyRouteImport.update({
+  id: '/spotify',
+  path: '/spotify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProjectIdRoute = AuthenticatedProjectIdRouteImport.update({
   id: '/project/$id',
   path: '/project/$id',
@@ -50,6 +62,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/spotify': typeof SpotifyRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/project/$id': typeof AuthenticatedProjectIdRoute
   '/studio/new': typeof AuthenticatedStudioNewRoute
 }
@@ -57,6 +71,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/spotify': typeof SpotifyRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/project/$id': typeof AuthenticatedProjectIdRoute
   '/studio/new': typeof AuthenticatedStudioNewRoute
 }
@@ -66,20 +82,38 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/spotify': typeof SpotifyRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/project/$id': typeof AuthenticatedProjectIdRoute
   '/_authenticated/studio/new': typeof AuthenticatedStudioNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/demo' | '/project/$id' | '/studio/new'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/demo'
+    | '/spotify'
+    | '/settings'
+    | '/project/$id'
+    | '/studio/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/demo' | '/project/$id' | '/studio/new'
+  to:
+    | '/'
+    | '/auth'
+    | '/demo'
+    | '/spotify'
+    | '/settings'
+    | '/project/$id'
+    | '/studio/new'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/demo'
+    | '/spotify'
+    | '/_authenticated/settings'
     | '/_authenticated/project/$id'
     | '/_authenticated/studio/new'
   fileRoutesById: FileRoutesById
@@ -89,6 +123,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   DemoRoute: typeof DemoRoute
+  SpotifyRoute: typeof SpotifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -121,6 +156,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/spotify': {
+      id: '/spotify'
+      path: '/spotify'
+      fullPath: '/spotify'
+      preLoaderRoute: typeof SpotifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/project/$id': {
       id: '/_authenticated/project/$id'
       path: '/project/$id'
@@ -139,11 +188,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedProjectIdRoute: typeof AuthenticatedProjectIdRoute
   AuthenticatedStudioNewRoute: typeof AuthenticatedStudioNewRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedProjectIdRoute: AuthenticatedProjectIdRoute,
   AuthenticatedStudioNewRoute: AuthenticatedStudioNewRoute,
 }
@@ -156,6 +207,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   DemoRoute: DemoRoute,
+  SpotifyRoute: SpotifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

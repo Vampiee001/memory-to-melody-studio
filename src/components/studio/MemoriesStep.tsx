@@ -19,9 +19,9 @@ type Uploading = { id: string; name: string; progress: number; error?: string };
 function uploadWithProgress(path: string, file: File, token: string, onProgress: (n: number) => void) {
   return new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/media/${path}`);
+    xhr.open("POST", `${import.meta.env["VITE_SUPABASE_URL"]}/storage/v1/object/media/${path}`);
     xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-    xhr.setRequestHeader("apikey", import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+    xhr.setRequestHeader("apikey", import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"]);
     xhr.setRequestHeader("Content-Type", file.type);
     xhr.upload.onprogress = (e) => e.lengthComputable && onProgress(Math.round((e.loaded / e.total) * 100));
     xhr.onload = () => (xhr.status < 300 ? resolve() : reject(new Error(`Upload failed (${xhr.status})`)));
@@ -45,7 +45,7 @@ export function MemoriesStep({ project: p, onNext }: { project: Project; onNext:
 
   async function onFiles(files: FileList | null) {
     if (!files?.length) return;
-    if (!consent) return toast.error("Please confirm the consent box before uploading.");
+    if (!consent) { toast.error("Please confirm the consent box before uploading."); return; }
     const { data: s } = await supabase.auth.getSession();
     const token = s.session?.access_token;
     const uid = s.session?.user.id;
@@ -86,6 +86,7 @@ export function MemoriesStep({ project: p, onNext }: { project: Project; onNext:
     const j = i + dir;
     if (j < 0 || j >= media.length) return;
     const a = media[i], b = media[j];
+    if (!a || !b) return;
     await Promise.all([
       supabase.from("project_media").update({ position: j }).eq("id", a.id),
       supabase.from("project_media").update({ position: i }).eq("id", b.id),
@@ -209,7 +210,7 @@ function Pick({ label, value, options, onChange }: { label: string; value: strin
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      <Select value={value || undefined} onValueChange={onChange}>
+      <Select value={value} onValueChange={onChange}>
         <SelectTrigger aria-label={label}><SelectValue placeholder="Choose" /></SelectTrigger>
         <SelectContent>{options.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
       </Select>

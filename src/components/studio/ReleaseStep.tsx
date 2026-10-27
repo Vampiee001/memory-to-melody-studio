@@ -32,8 +32,10 @@ export function ReleaseStep({ project: p, onNext }: { project: Project; onNext: 
 
   async function uploadCover(file?: File) {
     if (!file) return;
-    if (!["image/jpeg", "image/png"].includes(file.type) || file.size > 10 * 1024 * 1024)
-      return toast.error("Cover must be a JPG or PNG under 10 MB.");
+    if (!["image/jpeg", "image/png"].includes(file.type) || file.size > 10 * 1024 * 1024) {
+      toast.error("Cover must be a JPG or PNG under 10 MB.");
+      return;
+    }
     const { data: u } = await supabase.auth.getUser();
     const path = `${u.user!.id}/${p.id}/cover-${Date.now()}.${file.type === "image/png" ? "png" : "jpg"}`;
     const { error } = await supabase.storage.from("covers").upload(path, file, { contentType: file.type });
@@ -118,7 +120,7 @@ export function ReleaseStep({ project: p, onNext }: { project: Project; onNext: 
   );
 }
 
-function Field({ id, label, value, onChange, placeholder }: { id: string; label: string; value?: string; onChange: (v: string) => void; placeholder?: string }) {
+function Field({ id, label, value, onChange, placeholder }: { id: string; label: string; value?: string | undefined; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
