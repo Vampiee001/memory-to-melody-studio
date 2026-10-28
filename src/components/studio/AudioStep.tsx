@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Wave } from "@/components/Brand";
 import { useProjectUpdate, useRefreshProject } from "./useProjectUpdate";
+import { BeatPanel } from "./BeatPanel";
+import { MasteringPanel } from "./MasteringPanel";
 
 export function AudioStep({ project: p, onNext }: { project: Project; onNext: () => void }) {
   const status = useServerFn(getIntegrationStatus);
@@ -40,6 +42,11 @@ export function AudioStep({ project: p, onNext }: { project: Project; onNext: ()
     } catch { toast.error("Audio generation failed."); }
     finally { setBusy(false); refresh(); }
   }
+
+  const uploadedBeat = p.beat_source === "uploaded" && p.beat_status === "ready";
+  const useBeatAsAudio = () =>
+    update.mutate({ audio_path: p.beat_path, audio_status: "ready", audio_error: null, mastering_status: "none", mastered_path: null },
+      { onSuccess: () => toast.success("Your beat is now the song audio (no vocals added)") });
 
   const exportBrief = () =>
     downloadText(`${p.title}-music-brief.txt`, `${p.title}\n\n[Music prompt]\n${p.music_prompt ?? ""}\n\n[Lyrics]\n${p.lyrics ?? ""}`);
@@ -74,21 +81,31 @@ export function AudioStep({ project: p, onNext }: { project: Project; onNext: ()
           <div className="space-y-3 rounded-3xl bg-muted p-5">
             <div className="flex items-center gap-3"><Music2 className="text-gold" /><span className="font-semibold">{p.title}</span></div>
             <audio controls src={url} className="w-full" aria-label={`Play ${p.title}`} />
+            <p className="text-xs text-muted-foreground">{p.audio_path === p.beat_path ? "Source: your uploaded beat" : "Source: AI-generated (original preview file, kept unchanged)"}</p>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" asChild><a href={url} download={`${p.title}.mp3`}><Download /> Download MP3</a></Button>
-              <Button variant="ghost" size="sm" onClick={compose} disabled={!music?.configured}>Generate a new take</Button>
+              <Button variant="outline" size="sm" asChild><a href={url} download={`${p.title}-preview`}><Download /> Download original</a></Button>
+              {!uploadedBeat && <Button variant="ghost" size="sm" onClick={compose} disabled={!music?.configured}>Generate a new take</Button>}
             </div>
           </div>
         ) : (
           <>
             {p.audio_status === "failed" && <p role="alert" className="rounded-2xl bg-destructive/15 p-3 text-sm text-destructive">{p.audio_error}</p>}
-            <Button variant="hero" size="lg" onClick={compose} disabled={!music?.configured || !p.lyrics}>
-              <Music2 /> Generate audio
-            </Button>
+            {uploadedBeat ? (
+              <div className="space-y-2 rounded-2xl bg-muted p-4 text-sm">
+                <p>The music provider can't sing over an uploaded beat. You can release your beat as the song audio (instrumental, or with vocals you recorded into it).</p>
+                <Button variant="hero" onClick={useBeatAsAudio}><Music2 /> Use my beat as the song audio</Button>
+              </div>
+            ) : (
+              <Button variant="hero" size="lg" onClick={compose} disabled={!music?.configured || !p.lyrics}>
+                <Music2 /> Generate audio
+              </Button>
+            )}
             {!p.lyrics && <p className="text-xs text-muted-foreground">Write lyrics in step 2 first.</p>}
           </>
         )}
         <Button variant="outline" onClick={exportBrief}><Download /> Export lyrics + music prompt</Button>
+        <BeatPanel project={p} beatConfigured={!!integ?.beats[0]?.configured} />
+        <MasteringPanel project={p} serviceConfigured={!!integ?.mastering[0]?.configured} />
       </section>
 
       <section className="surface space-y-4 p-6" aria-labelledby="rights">

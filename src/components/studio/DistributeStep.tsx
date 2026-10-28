@@ -5,7 +5,7 @@ import { ExternalLink, Info, Send, Radio } from "lucide-react";
 import { toast } from "sonner";
 import type { Project } from "@/lib/projects";
 import { getIntegrationStatus, submitToDistributor } from "@/lib/songs.functions";
-import { buildReleaseChecklist, canTransition, DISTRIBUTION_LABELS, isReleaseReady, type DistributionStatus, type ReleaseMeta } from "@/lib/release";
+import { checklistForProject, canTransition, DISTRIBUTION_LABELS, isReleaseReady, type DistributionStatus, type ReleaseMeta } from "@/lib/release";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,10 +29,7 @@ export function DistributeStep({ project: p }: { project: Project }) {
   const { data: integ } = useQuery({ queryKey: ["integrations"], queryFn: () => status() });
   const r = p.release as ReleaseMeta;
   const st = p.distribution_status as DistributionStatus;
-  const ready = isReleaseReady(buildReleaseChecklist({
-    release: r, lyrics: p.lyrics, audioReady: p.audio_status === "ready", coverPath: p.cover_path,
-    rights: (p.rights_checklist ?? {}) as Record<string, boolean>,
-  }));
+  const ready = isReleaseReady(checklistForProject(p, r));
   const api = integ?.distributors[0];
   const [review, setReview] = useState<null | "api" | "manual">(null);
   const [confirmed, setConfirmed] = useState(false);
@@ -59,6 +56,10 @@ export function DistributeStep({ project: p }: { project: Project }) {
   return (
     <div className="space-y-6">
       <section className="surface p-6" aria-label="Distribution status">
+        <p className="mb-3 text-sm text-muted-foreground">
+          Release package: {p.package_exported_at ? <strong className="text-foreground">exported {new Date(p.package_exported_at).toLocaleDateString()}</strong> : "not exported yet"}.
+          {" "}Exporting files is not the same as submitting to a distributor, and “Submitted” is not “Live on Spotify”.
+        </p>
         <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {ORDER.map((s, i) => (
             <li key={s} aria-current={s === st ? "step" : undefined}

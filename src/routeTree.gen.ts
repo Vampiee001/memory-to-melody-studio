@@ -15,6 +15,8 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as SpotifyRouteImport } from './routes/spotify'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedPlaylistsIndexRouteImport } from './routes/_authenticated/playlists.index'
+import { Route as AuthenticatedPlaylistsIdRouteImport } from './routes/_authenticated/playlists.$id'
 import { Route as AuthenticatedProjectIdRouteImport } from './routes/_authenticated/project.$id'
 import { Route as AuthenticatedStudioNewRouteImport } from './routes/_authenticated/studio.new'
 
@@ -47,6 +49,18 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPlaylistsIndexRoute =
+  AuthenticatedPlaylistsIndexRouteImport.update({
+    id: '/playlists/',
+    path: '/playlists/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPlaylistsIdRoute =
+  AuthenticatedPlaylistsIdRouteImport.update({
+    id: '/playlists/$id',
+    path: '/playlists/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProjectIdRoute = AuthenticatedProjectIdRouteImport.update({
   id: '/project/$id',
   path: '/project/$id',
@@ -64,8 +78,10 @@ export interface FileRoutesByFullPath {
   '/demo': typeof DemoRoute
   '/spotify': typeof SpotifyRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/playlists/$id': typeof AuthenticatedPlaylistsIdRoute
   '/project/$id': typeof AuthenticatedProjectIdRoute
   '/studio/new': typeof AuthenticatedStudioNewRoute
+  '/playlists/': typeof AuthenticatedPlaylistsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -73,8 +89,10 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoRoute
   '/spotify': typeof SpotifyRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/playlists/$id': typeof AuthenticatedPlaylistsIdRoute
   '/project/$id': typeof AuthenticatedProjectIdRoute
   '/studio/new': typeof AuthenticatedStudioNewRoute
+  '/playlists': typeof AuthenticatedPlaylistsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -84,8 +102,10 @@ export interface FileRoutesById {
   '/demo': typeof DemoRoute
   '/spotify': typeof SpotifyRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/playlists/$id': typeof AuthenticatedPlaylistsIdRoute
   '/_authenticated/project/$id': typeof AuthenticatedProjectIdRoute
   '/_authenticated/studio/new': typeof AuthenticatedStudioNewRoute
+  '/_authenticated/playlists/': typeof AuthenticatedPlaylistsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -95,8 +115,10 @@ export interface FileRouteTypes {
     | '/demo'
     | '/spotify'
     | '/settings'
+    | '/playlists/$id'
     | '/project/$id'
     | '/studio/new'
+    | '/playlists/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -104,8 +126,10 @@ export interface FileRouteTypes {
     | '/demo'
     | '/spotify'
     | '/settings'
+    | '/playlists/$id'
     | '/project/$id'
     | '/studio/new'
+    | '/playlists'
   id:
     | '__root__'
     | '/'
@@ -114,8 +138,10 @@ export interface FileRouteTypes {
     | '/demo'
     | '/spotify'
     | '/_authenticated/settings'
+    | '/_authenticated/playlists/$id'
     | '/_authenticated/project/$id'
     | '/_authenticated/studio/new'
+    | '/_authenticated/playlists/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -170,6 +196,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/playlists/': {
+      id: '/_authenticated/playlists/'
+      path: '/playlists'
+      fullPath: '/playlists/'
+      preLoaderRoute: typeof AuthenticatedPlaylistsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/playlists/$id': {
+      id: '/_authenticated/playlists/$id'
+      path: '/playlists/$id'
+      fullPath: '/playlists/$id'
+      preLoaderRoute: typeof AuthenticatedPlaylistsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/project/$id': {
       id: '/_authenticated/project/$id'
       path: '/project/$id'
@@ -189,14 +229,18 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedPlaylistsIdRoute: typeof AuthenticatedPlaylistsIdRoute
   AuthenticatedProjectIdRoute: typeof AuthenticatedProjectIdRoute
   AuthenticatedStudioNewRoute: typeof AuthenticatedStudioNewRoute
+  AuthenticatedPlaylistsIndexRoute: typeof AuthenticatedPlaylistsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedPlaylistsIdRoute: AuthenticatedPlaylistsIdRoute,
   AuthenticatedProjectIdRoute: AuthenticatedProjectIdRoute,
   AuthenticatedStudioNewRoute: AuthenticatedStudioNewRoute,
+  AuthenticatedPlaylistsIndexRoute: AuthenticatedPlaylistsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

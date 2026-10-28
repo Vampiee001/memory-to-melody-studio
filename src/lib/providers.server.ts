@@ -208,7 +208,7 @@ export interface CoverProvider {
   id: string;
   label: string;
   isConfigured(): boolean;
-  generate(input: { prompt: string; reference?: { data: Uint8Array; mediaType: string; name: string } }): Promise<Uint8Array>;
+  generate(input: { prompt: string; reference?: { data: Uint8Array; mediaType: string; name: string } | undefined }): Promise<Uint8Array>;
 }
 
 const IMAGE_MODEL = "openai/gpt-image-2.5-sunburst";
@@ -227,7 +227,7 @@ const lovableCover: CoverProvider = {
       form.set("prompt", prompt);
       form.set("size", "1024x1024");
       form.set("quality", "medium");
-      form.append("image[]", new File([reference.data], reference.name, { type: reference.mediaType }));
+      form.append("image[]", new File([new Uint8Array(reference.data)], reference.name, { type: reference.mediaType }));
       res = await fetch(`${GATEWAY}/images/edits`, { method: "POST", headers: { Authorization: `Bearer ${key}` }, body: form });
     } else {
       res = await fetch(`${GATEWAY}/images/generations`, {
