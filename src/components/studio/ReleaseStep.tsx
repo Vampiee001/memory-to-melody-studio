@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { Check, Circle, Download, ImagePlus, Wand2 } from "lucide-react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getIntegrationStatus } from "@/lib/songs.functions";
+import { CoverPanel } from "./CoverPanel";
+import { Check, Circle, Download } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import type { Project } from "@/lib/projects";
 import { checklistForProject, downloadText, isReleaseReady, releaseToCSV, type ReleaseMeta } from "@/lib/release";
 import { LANGUAGES } from "@/lib/media";
@@ -16,35 +19,19 @@ export function ReleaseStep({ project: p, onNext }: { project: Project; onNext: 
   const update = useProjectUpdate(p.id);
   const initial = p.release as ReleaseMeta;
   const [r, setR] = useState<ReleaseMeta>({ track_title: p.title, language: p.language ?? "English", ...initial });
-  const [cover, setCover] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (p.cover_path) supabase.storage.from("covers").createSignedUrl(p.cover_path, 3600).then(({ data }) => setCover(data?.signedUrl ?? null));
-  }, [p.cover_path]);
+  const status = useServerFn(getIntegrationStatus);
+  const { data: integ } = useQuery({ queryKey: ["integrations"], queryFn: () => status() });
 
   const items = checklistForProject(p, r);
   const ready = isReleaseReady(items);
   const save = (extra = {}) => update.mutateAsync({ release: r, ...extra });
 
-  async function uploadCover(file?: File) {
-    if (!file) return;
-    if (!["image/jpeg", "image/png"].includes(file.type) || file.size > 10 * 1024 * 1024) {
-      toast.error("Cover must be a JPG or PNG under 10 MB.");
-      return;
-    }
-    const { data: u } = await supabase.auth.getUser();
-    const path = `${u.user!.id}/${p.id}/cover-${Date.now()}.${file.type === "image/png" ? "png" : "jpg"}`;
-    const { error } = await supabase.storage.from("covers").upload(path, file, { contentType: file.type });
-    if (error) { toast.error("Cover upload failed"); return; }
-    if (p.cover_path) await supabase.storage.from("covers").remove([p.cover_path]);
-    await update.mutateAsync({ cover_path: path });
-    toast.success("Cover uploaded");
-  }
+  const markExported = () => update.mutate({ release: r, package_exported_at: new Date().toISOString() });
 
   const pkg = () => ({
-    ...r, lyrics: p.lyrics, music_prompt: p.music_prompt, audio_file: p.audio_path ? `${r.track_title}.mp3` : null,
-    cover_file: p.cover_path ? "cover" : null, ai_generated: true, generated_with: "MemoryMelody",
+    ...r, lyrics: p.lyrics, music_prompt: p.music_prompt, audio_file: p.mastered_path ? `${r.track_title}-release.wav` : p.audio_path ? `${r.track_title}-preview` : null,
+    mastering: p.mastering_status === "ready" ? p.mastering_engine : "none", beat_source: p.beat_source, beat_rights: p.beat_rights,
+    cover_file: p.cover_path ? `${r.track_title}-cover-3000.jpg` : null, ai_generated: true, generated_with: "MemoryMelody",
     checklist: items.map((i) => ({ item: i.label, done: i.done })),
   });
 
@@ -73,26 +60,17 @@ export function ReleaseStep({ project: p, onNext }: { project: Project; onNext: 
           <Switch checked={!!r.explicit} onCheckedChange={(v) => setR({ ...r, explicit: v })} aria-label="Explicit content" />
         </label>
 
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="size-28 overflow-hidden rounded-2xl border border-border bg-muted">
-            {cover ? <img src={cover} alt="Cover art" className="h-full w-full object-cover" /> : <ImagePlus className="m-auto mt-10 text-muted-foreground" />}
-          </div>
-          <div className="space-y-2">
-            <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}><ImagePlus /> Upload cover art</Button>
-            <Button variant="ghost" size="sm" disabled title="Requires an image-generation provider"><Wand2 /> Generate cover (coming soon)</Button>
-            <p className="text-xs text-muted-foreground">Square JPG/PNG, 3000×3000 px recommended.</p>
-          </div>
-          <input ref={fileRef} type="file" hidden accept="image/jpeg,image/png" onChange={(e) => uploadCover(e.target.files?.[0])} />
-        </div>
+        <CoverPanel project={p} artist={r.artist_name} configured={!!integ?.covers[0]?.configured} />
 
         <label className="flex items-start gap-3 rounded-2xl border border-gold/40 bg-gold/10 p-4 text-sm">
           <Checkbox className="mt-0.5" checked={!!r.ownership_declared} onCheckedChange={(v) => setR({ ...r, ownership_declared: !!v })} />
           <span>I declare I own or control the rights to this recording, lyrics, cover art and all source media, and that releasing it complies with the AI provider's terms.</span>
         </label>
+        {p.package_exported_at && <p className="text-xs text-muted-foreground">Release package exported {new Date(p.package_exported_at).toLocaleString()} — exported files are not a submission.</p>}
         <div className="flex flex-wrap gap-3">
           <Button variant="secondary" onClick={() => save().then(() => toast.success("Saved"))}>Save</Button>
-          <Button variant="outline" onClick={() => downloadText(`${r.track_title}-release.json`, JSON.stringify(pkg(), null, 2), "application/json")}><Download /> JSON</Button>
-          <Button variant="outline" onClick={() => downloadText(`${r.track_title}-release.csv`, releaseToCSV(r, { audio_status: p.audio_status }), "text/csv")}><Download /> CSV</Button>
+          <Button variant="outline" onClick={() => { downloadText(`${r.track_title}-release.json`, JSON.stringify(pkg(), null, 2), "application/json"); markExported(); }}><Download /> JSON</Button>
+          <Button variant="outline" onClick={() => { downloadText(`${r.track_title}-release.csv`, releaseToCSV(r, { audio_status: p.audio_status, mastering: p.mastering_status, beat_source: p.beat_source }), "text/csv"); markExported(); }}><Download /> CSV</Button>
           <Button variant="outline" onClick={() => downloadText(`${r.track_title}-lyrics.txt`, p.lyrics ?? "")}><Download /> Lyrics</Button>
         </div>
       </section>

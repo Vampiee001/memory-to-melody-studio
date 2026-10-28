@@ -5,7 +5,7 @@ import { ExternalLink, Info, Send, Radio } from "lucide-react";
 import { toast } from "sonner";
 import type { Project } from "@/lib/projects";
 import { getIntegrationStatus, submitToDistributor } from "@/lib/songs.functions";
-import { buildReleaseChecklist, canTransition, DISTRIBUTION_LABELS, isReleaseReady, type DistributionStatus, type ReleaseMeta } from "@/lib/release";
+import { checklistForProject, canTransition, DISTRIBUTION_LABELS, isReleaseReady, type DistributionStatus, type ReleaseMeta } from "@/lib/release";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,10 +29,7 @@ export function DistributeStep({ project: p }: { project: Project }) {
   const { data: integ } = useQuery({ queryKey: ["integrations"], queryFn: () => status() });
   const r = p.release as ReleaseMeta;
   const st = p.distribution_status as DistributionStatus;
-  const ready = isReleaseReady(buildReleaseChecklist({
-    release: r, lyrics: p.lyrics, audioReady: p.audio_status === "ready", coverPath: p.cover_path,
-    rights: (p.rights_checklist ?? {}) as Record<string, boolean>,
-  }));
+  const ready = isReleaseReady(checklistForProject(p, r));
   const api = integ?.distributors[0];
   const [review, setReview] = useState<null | "api" | "manual">(null);
   const [confirmed, setConfirmed] = useState(false);

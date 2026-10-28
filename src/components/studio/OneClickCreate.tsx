@@ -39,7 +39,7 @@ export function OneClickCreate({ project: p, onDone }: { project: Project; onDon
   const [running, setRunning] = useState(false);
   const set = (k: StepKey, s: State, msg?: string) => setSteps((prev) => ({ ...prev, [k]: msg === undefined ? { s } : { s, msg } }));
 
-  const canStart = p.consent && (!!p.context?.trim() || true);
+  const canStart = p.consent;
 
   async function runStep(k: StepKey): Promise<boolean> {
     set(k, "running");
