@@ -61,6 +61,10 @@ function SettingsPage() {
             {data?.music.map((m) => (
               <Row key={m.id} label={`Music generation — ${m.label}`} configured={m.configured} note="30-second clips or full tracks up to ~3 minutes. Check the provider's terms for commercial use." />
             ))}
+            {data?.beats.map((m) => <Row key={m.id} label={`Beat generation — ${m.label}`} configured={m.configured} note="Instrumental beats up to 30 seconds." />)}
+            {data?.covers.map((m) => <Row key={m.id} label={`Cover art — ${m.label}`} configured={m.configured} note="Square artwork; your photos are only used if you pick one and confirm consent." />)}
+            {data?.mastering.map((m) => <Row key={m.id} label={`Mastering — ${m.label}`} configured={m.configured} note="Needs MASTERING_API_URL and MASTERING_API_KEY secrets. Without it, only basic in-browser processing is available (clearly labelled, not professional mastering)." />)}
+            <Row label="Spotify playlists (OAuth)" configured={!!data?.spotifyPlaylists} note="Not built in. Playlists stay in MemoryMelody; creating Spotify playlists needs a Spotify app (SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET) and OAuth wiring." />
           </>
         )}
       </section>

@@ -31,6 +31,7 @@ export function AppHeader() {
           </Link>
           {user ? (
             <>
+              <Link to="/playlists" className="rounded-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground">Playlists</Link>
               <Button asChild variant="ghost" size="icon" aria-label="Settings">
                 <Link to="/settings"><Settings /></Link>
               </Button>

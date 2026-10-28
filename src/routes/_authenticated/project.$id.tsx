@@ -10,6 +10,7 @@ import { AudioStep } from "@/components/studio/AudioStep";
 import { ReleaseStep } from "@/components/studio/ReleaseStep";
 import { DistributeStep } from "@/components/studio/DistributeStep";
 import { Disclaimer } from "@/components/Brand";
+import { OneClickCreate } from "@/components/studio/OneClickCreate";
 
 export const Route = createFileRoute("/_authenticated/project/$id")({
   head: () => ({ meta: [{ title: "Song studio — MemoryMelody" }, { name: "description", content: "Create, edit and release your memory song." }] }),
@@ -48,6 +49,7 @@ function ProjectPage() {
           ))}
         </ol>
       </nav>
+      {current <= 1 && <OneClickCreate project={p} onDone={go} />}
       {current === 0 && <MemoriesStep project={p} onNext={() => go(1)} />}
       {current === 1 && <SongStep project={p} onNext={() => go(2)} />}
       {current === 2 && <AudioStep project={p} onNext={() => go(3)} />}

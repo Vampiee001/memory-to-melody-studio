@@ -56,6 +56,10 @@ export function DistributeStep({ project: p }: { project: Project }) {
   return (
     <div className="space-y-6">
       <section className="surface p-6" aria-label="Distribution status">
+        <p className="mb-3 text-sm text-muted-foreground">
+          Release package: {p.package_exported_at ? <strong className="text-foreground">exported {new Date(p.package_exported_at).toLocaleDateString()}</strong> : "not exported yet"}.
+          {" "}Exporting files is not the same as submitting to a distributor, and “Submitted” is not “Live on Spotify”.
+        </p>
         <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {ORDER.map((s, i) => (
             <li key={s} aria-current={s === st ? "step" : undefined}
