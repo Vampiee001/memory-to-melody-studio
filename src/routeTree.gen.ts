@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as SpotifyRouteImport } from './routes/spotify'
+import { Route as AuthenticatedManageRouteImport } from './routes/_authenticated/manage'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedPlaylistsIndexRouteImport } from './routes/_authenticated/playlists.index'
 import { Route as AuthenticatedPlaylistsIdRouteImport } from './routes/_authenticated/playlists.$id'
@@ -43,6 +44,11 @@ const SpotifyRoute = SpotifyRouteImport.update({
   id: '/spotify',
   path: '/spotify',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedManageRoute = AuthenticatedManageRouteImport.update({
+  id: '/manage',
+  path: '/manage',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/spotify': typeof SpotifyRoute
+  '/manage': typeof AuthenticatedManageRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/playlists/$id': typeof AuthenticatedPlaylistsIdRoute
   '/project/$id': typeof AuthenticatedProjectIdRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/spotify': typeof SpotifyRoute
+  '/manage': typeof AuthenticatedManageRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/playlists/$id': typeof AuthenticatedPlaylistsIdRoute
   '/project/$id': typeof AuthenticatedProjectIdRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/spotify': typeof SpotifyRoute
+  '/_authenticated/manage': typeof AuthenticatedManageRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/playlists/$id': typeof AuthenticatedPlaylistsIdRoute
   '/_authenticated/project/$id': typeof AuthenticatedProjectIdRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/demo'
     | '/spotify'
+    | '/manage'
     | '/settings'
     | '/playlists/$id'
     | '/project/$id'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/demo'
     | '/spotify'
+    | '/manage'
     | '/settings'
     | '/playlists/$id'
     | '/project/$id'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/demo'
     | '/spotify'
+    | '/_authenticated/manage'
     | '/_authenticated/settings'
     | '/_authenticated/playlists/$id'
     | '/_authenticated/project/$id'
@@ -189,6 +201,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SpotifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/manage': {
+      id: '/_authenticated/manage'
+      path: '/manage'
+      fullPath: '/manage'
+      preLoaderRoute: typeof AuthenticatedManageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -228,6 +247,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedManageRoute: typeof AuthenticatedManageRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedPlaylistsIdRoute: typeof AuthenticatedPlaylistsIdRoute
   AuthenticatedProjectIdRoute: typeof AuthenticatedProjectIdRoute
@@ -236,6 +256,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedManageRoute: AuthenticatedManageRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedPlaylistsIdRoute: AuthenticatedPlaylistsIdRoute,
   AuthenticatedProjectIdRoute: AuthenticatedProjectIdRoute,
