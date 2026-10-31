@@ -86,6 +86,51 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_audit: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          details: Json
+          id: string
+          target_id: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          id?: string
+        }
+        Relationships: []
+      }
       project_media: {
         Row: {
           created_at: string
@@ -271,6 +316,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          permissions: string[]
+          role: Database["public"]["Enums"]["portal_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          permissions?: string[]
+          role: Database["public"]["Enums"]["portal_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          permissions?: string[]
+          role?: Database["public"]["Enums"]["portal_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           default_artist_name: string | null
@@ -309,10 +375,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      portal_access: { Args: never; Returns: Json }
+      portal_can: { Args: { task: string }; Returns: boolean }
+      portal_metrics: { Args: never; Returns: Json }
+      portal_set_admin: {
+        Args: { revoke_access?: boolean; target_email: string; tasks: string[] }
+        Returns: undefined
+      }
+      portal_team: { Args: never; Returns: Json }
+      portal_users: { Args: { search_text?: string }; Returns: Json }
     }
     Enums: {
-      [_ in never]: never
+      portal_role: "owner" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -439,6 +513,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      portal_role: ["owner", "admin"],
+    },
   },
 } as const

@@ -15,6 +15,13 @@
       "when": 1793128811740,
       "tag": "0001_beats_mastering_covers_playlists",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793424208388,
+      "tag": "0002_owner_admin_portal",
+      "breakpoints": true
     }
   ]
 }
