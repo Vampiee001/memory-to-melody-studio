@@ -1,0 +1,4 @@
+- [ ] Owner/admin roles and task permissions, verified creator account, display names.
+- [ ] Management portal: team, user lookup, usage metrics, honest provider checks.
+- [ ] Signup, password reset and account settings.
+- [ ] Permission tests and signed-in portal verification.
