@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +26,8 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const [mode, setMode] = useState<"in" | "up" | "reset">("in");
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -46,8 +47,12 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      if (mode === "up") {
-        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
+      if (mode === "reset") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
+        if (error) throw error;
+        setSent(true);
+      } else if (mode === "up") {
+        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin, data: { display_name: displayName.trim() } } });
         if (error) throw error;
         setSent(true);
       } else {
@@ -70,12 +75,13 @@ function AuthPage() {
     <div className="mx-auto mt-8 max-w-md surface p-8">
       <div className="mb-6 text-center">
         <Wave bars={7} className="mb-3" />
-        <h1 className="text-3xl font-semibold">{mode === "in" ? "Welcome back" : "Create your account"}</h1>
+        <h1 className="text-3xl font-semibold">{mode === "in" ? "Welcome back" : mode === "reset" ? "Reset your password" : "Create your account"}</h1>
         <p className="mt-2 text-sm text-muted-foreground">Your songs and uploads stay private to your account.</p>
       </div>
       {sent ? (
         <p className="rounded-2xl bg-accent p-4 text-center text-sm">
-          Check <strong>{email}</strong> for a confirmation link, then come back to sign in.
+          {mode === "reset" ? "If an account exists for this email, you’ll receive a password reset link." : <>Check <strong>{email}</strong> for a confirmation link, then come back to sign in.</>}
+          <Button variant="link" onClick={() => { setSent(false); setMode("in"); }}>Back to sign in</Button>
         </p>
       ) : (
         <>
@@ -84,21 +90,23 @@ function AuthPage() {
             <span className="h-px flex-1 bg-border" />or<span className="h-px flex-1 bg-border" />
           </div>
           <form onSubmit={submit} className="space-y-4">
+            {mode === "up" && <div className="space-y-2"><Label htmlFor="signup-name">Display name</Label><Input id="signup-name" required autoComplete="name" maxLength={80} value={displayName} onChange={e => setDisplayName(e.target.value)} /></div>}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
-            <div className="space-y-2">
+            {mode !== "reset" && <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" required minLength={8} autoComplete={mode === "in" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} />
-            </div>
+            </div>}
             <Button type="submit" variant="hero" className="w-full" disabled={busy}>
-              {busy ? "Please wait…" : mode === "in" ? "Sign in" : "Create account"}
+              {busy ? "Please wait…" : mode === "in" ? "Sign in" : mode === "reset" ? "Send reset link" : "Create account"}
             </Button>
           </form>
-          <button className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground" onClick={() => setMode(mode === "in" ? "up" : "in")}>
+          {mode === "in" && <Button variant="link" className="mt-3 w-full" onClick={() => setMode("reset")}>Forgot password?</Button>}
+          <Button variant="ghost" className="mt-4 w-full text-center text-sm text-muted-foreground" onClick={() => setMode(mode === "in" ? "up" : "in")}>
             {mode === "in" ? "New here? Create an account" : "Already have an account? Sign in"}
-          </button>
+          </Button>
         </>
       )}
     </div>

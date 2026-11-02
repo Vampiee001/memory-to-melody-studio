@@ -39,5 +39,14 @@ export const checkPortalProviders = createServerFn({ method: "GET" }).middleware
   const { writers, musicProviders, beatProviders, coverProviders, masteringProviders, distributors } = await import("./providers.server");
   const groups = { writers, music: musicProviders, beats: beatProviders, covers: coverProviders, mastering: masteringProviders, distributors };
   const checkedAt = new Date().toISOString();
-  return { checkedAt, providers: Object.entries(groups).flatMap(([group, registry]) => Object.values(registry).map(p => ({ id: p.id, group, label: p.label, configured: p.isConfigured(), health: p.isConfigured() ? "Not tested remotely" : "Setup required", note: p.isConfigured() ? "Credentials present; no generation or submission was performed." : group === "mastering" ? "Needs MASTERING_API_URL and MASTERING_API_KEY." : group === "distributors" ? "Needs DISTRIBUTOR_API_URL and DISTRIBUTOR_API_KEY and approved partner access." : "AI service credentials are missing." }))) };
+  let gatewayHealth = "Not tested remotely";
+  const key = process.env["LOVABLE_API_KEY"];
+  if (key) {
+    try {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/models", { headers: { Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(8000) });
+      gatewayHealth = response.ok ? "Gateway reachable" : `Gateway check failed (${response.status})`;
+      await response.body?.cancel();
+    } catch { gatewayHealth = "Gateway unreachable or timed out"; }
+  }
+  return { checkedAt, providers: Object.entries(groups).flatMap(([group, registry]) => Object.values(registry).map(p => ({ id: p.id, group, label: p.label, configured: p.isConfigured(), health: !p.isConfigured() ? "Setup required" : ["mastering", "distributors"].includes(group) ? "Not tested remotely" : gatewayHealth, note: p.isConfigured() ? ["mastering", "distributors"].includes(group) ? "Credentials present; remote health requires a documented non-billable endpoint." : "Non-generating gateway check only; individual model availability and credits are not verified." : group === "mastering" ? "Needs MASTERING_API_URL and MASTERING_API_KEY." : group === "distributors" ? "Needs DISTRIBUTOR_API_URL and DISTRIBUTOR_API_KEY and approved partner access." : "AI service credentials are missing." }))) };
 });

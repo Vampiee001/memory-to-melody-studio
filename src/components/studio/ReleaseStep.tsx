@@ -14,6 +14,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useProjectUpdate } from "./useProjectUpdate";
+import { DISTRIBUTORS, DIRECT_PLATFORMS } from "@/lib/distribution";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { ReleasePackageDownload } from "./ReleasePackageDownload";
 
 export function ReleaseStep({ project: p, onNext }: { project: Project; onNext: () => void }) {
   const update = useProjectUpdate(p.id);
@@ -39,6 +42,7 @@ export function ReleaseStep({ project: p, onNext }: { project: Project; onNext: 
     <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
       <section className="surface space-y-4 p-6">
         <h2 className="text-2xl font-semibold">Release details</h2>
+        <div className="space-y-2"><Label htmlFor="release-distributor">Distributor to Spotify & other stores</Label><Select value={DISTRIBUTORS.some(d => d.name === r.distributor_name) ? r.distributor_name : r.distributor_name ? "other" : "none"} onValueChange={v => setR({ ...r, distributor_name: v === "none" ? "" : v === "other" ? "Other distributor" : v })}><SelectTrigger id="release-distributor"><SelectValue placeholder="Choose a distributor" /></SelectTrigger><SelectContent><SelectItem value="none">Choose a distributor</SelectItem>{DISTRIBUTORS.map(d => <SelectItem key={d.name} value={d.name}>{d.name}</SelectItem>)}<SelectItem value="other">Other distributor / label</SelectItem></SelectContent></Select><p className="text-xs text-muted-foreground">You → distributor → Spotify, Apple Music, Amazon Music and other supported stores. Check current fees, rights and AI-music acceptance. Selection does not connect an account or submit a release.</p>{DISTRIBUTORS.filter(d => d.name === r.distributor_name).map(d => <Button key={d.name} asChild variant="link"><a href={d.url} target="_blank" rel="noreferrer">Open {d.name} ↗</a></Button>)}</div>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="artist" label="Artist name" value={r.artist_name} onChange={(v) => setR({ ...r, artist_name: v })} />
           <Field id="track" label="Track title" value={r.track_title} onChange={(v) => setR({ ...r, track_title: v })} />
@@ -67,6 +71,7 @@ export function ReleaseStep({ project: p, onNext }: { project: Project; onNext: 
           <span>I declare I own or control the rights to this recording, lyrics, cover art and all source media, and that releasing it complies with the AI provider's terms.</span>
         </label>
         {p.package_exported_at && <p className="text-xs text-muted-foreground">Release package exported {new Date(p.package_exported_at).toLocaleString()} — exported files are not a submission.</p>}
+        <ReleasePackageDownload project={p} release={r} ready={ready} onExport={markExported} />
         <div className="flex flex-wrap gap-3">
           <Button variant="secondary" onClick={() => save().then(() => toast.success("Saved"))}>Save</Button>
           <Button variant="outline" onClick={() => { downloadText(`${r.track_title}-release.json`, JSON.stringify(pkg(), null, 2), "application/json"); markExported(); }}><Download /> JSON</Button>
@@ -90,6 +95,7 @@ export function ReleaseStep({ project: p, onNext }: { project: Project; onNext: 
           {ready ? "Mark ready to distribute →" : `${items.filter((i) => !i.done).length} items left`}
         </Button>
         <Button variant="ghost" className="w-full" onClick={async () => { await save(); onNext(); }}>Go to Spotify guide</Button>
+        <h3 className="border-t border-border pt-4 font-semibold">Other upload & earning options</h3>{DIRECT_PLATFORMS.map(platform => <div key={platform.name} className="border-b border-border pb-3"><Button asChild variant="link" className="px-0"><a href={platform.url} target="_blank" rel="noreferrer">{platform.name} ↗</a></Button><p className="text-xs text-muted-foreground">{platform.note}</p></div>)}<p className="text-xs text-muted-foreground">Availability, eligibility and income vary; no monetization is guaranteed.</p>
       </section>
     </div>
   );
