@@ -9,6 +9,7 @@ import { deleteProject } from "@/lib/projects";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AccountSettings } from "@/components/AccountSettings";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -48,6 +49,7 @@ function SettingsPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <h1 className="text-4xl font-semibold">Settings</h1>
+      <AccountSettings />
 
       <section className="surface space-y-3 p-6">
         <h2 className="text-xl font-semibold">AI services</h2>
