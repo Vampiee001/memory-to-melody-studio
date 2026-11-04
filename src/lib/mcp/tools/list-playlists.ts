@@ -24,11 +24,14 @@ export default defineTool({
       tracks: (pl.playlist_items ?? [])
         .slice()
         .sort((a, b) => a.position - b.position)
-        .map((item) => ({
-          songId: item.projects?.id ?? null,
-          title: item.projects?.title ?? null,
-          audioStatus: item.projects?.audio_status ?? null,
-        })),
+        .map((item) => {
+          const proj = Array.isArray(item.projects) ? item.projects[0] : item.projects;
+          return {
+            songId: proj?.id ?? null,
+            title: proj?.title ?? null,
+            audioStatus: proj?.audio_status ?? null,
+          };
+        }),
     }));
     return {
       content: [{ type: "text", text: playlists.length ? `${playlists.length} playlist(s)` : "No playlists yet" }],
