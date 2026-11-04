@@ -11,6 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Disclaimer, Wave } from "@/components/Brand";
 import { projectsQuery, deleteProject, STAGE_LABEL, DEMO_PROJECT, type Project } from "@/lib/projects";
 import { DISTRIBUTION_LABELS, type DistributionStatus } from "@/lib/release";
+import { useWebMCP } from "use-webmcp-tool";
+import { runWebMCPTool } from "@/lib/webmcp-telemetry";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -81,6 +83,22 @@ function HowItWorks() {
 
 function Library() {
   const { data, isLoading, error } = useQuery(projectsQuery());
+
+  useWebMCP({
+    name: "list_my_songs",
+    description: "List the songs currently shown in the signed-in user's MemoryMelody library, with stage and release status.",
+    annotations: { readOnlyHint: true, untrustedContentHint: true },
+    execute: () =>
+      runWebMCPTool("list_my_songs", () => {
+        if (isLoading) return "Library is still loading — try again in a moment.";
+        if (error) throw new Error("The library failed to load.");
+        if (!data?.length) return "No songs in the library yet.";
+        return data
+          .map((p) => `${p.id}: ${p.title} — ${STAGE_LABEL[p.stage] ?? p.stage}; ${DISTRIBUTION_LABELS[p.distribution_status as DistributionStatus] ?? p.distribution_status}`)
+          .join("\n");
+      }),
+  });
+
   return (
     <section aria-labelledby="lib" className="space-y-4">
       <div className="flex items-end justify-between">
