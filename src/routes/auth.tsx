@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Wave } from "@/components/Brand";
-
-const safePath = (p?: string) => (p && p.startsWith("/") && !p.startsWith("//") ? p : "/");
+import { oauthReturnPath } from "@/lib/oauth-return-path";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>): { redirect?: string } => (typeof s["redirect"] === "string" ? { redirect: s["redirect"] } : {}),
@@ -26,6 +25,10 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
+  // Validated once; preserves the full OAuth consent URL (query included)
+  // through every sign-in and sign-up method.
+  const next = oauthReturnPath(redirect);
+  const nextUrl = () => new URL(next, window.location.origin).href;
   const [mode, setMode] = useState<"in" | "up" | "reset">("in");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -35,13 +38,13 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: safePath(redirect) });
+      if (data.session) navigate({ to: next });
     });
     const { data } = supabase.auth.onAuthStateChange((e, s) => {
-      if (e === "SIGNED_IN" && s) navigate({ to: safePath(redirect) });
+      if (e === "SIGNED_IN" && s) navigate({ to: next });
     });
     return () => data.subscription.unsubscribe();
-  }, [navigate, redirect]);
+  }, [navigate, next]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,7 +55,7 @@ function AuthPage() {
         if (error) throw error;
         setSent(true);
       } else if (mode === "up") {
-        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin, data: { display_name: displayName.trim() } } });
+        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: nextUrl(), data: { display_name: displayName.trim() } } });
         if (error) throw error;
         setSent(true);
       } else {
@@ -67,7 +70,7 @@ function AuthPage() {
   }
 
   async function google() {
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: nextUrl() });
     if (r.error) toast.error("Google sign-in failed. Please try again.");
   }
 

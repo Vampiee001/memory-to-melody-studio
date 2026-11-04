@@ -13,10 +13,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SpotifyRouteImport } from './routes/spotify'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedManageRouteImport } from './routes/_authenticated/manage'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedPlaylistsIndexRouteImport } from './routes/_authenticated/playlists.index'
 import { Route as AuthenticatedPlaylistsIdRouteImport } from './routes/_authenticated/playlists.$id'
 import { Route as AuthenticatedProjectIdRouteImport } from './routes/_authenticated/project.$id'
@@ -41,6 +44,11 @@ const DemoRoute = DemoRouteImport.update({
   path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -51,6 +59,12 @@ const SpotifyRoute = SpotifyRouteImport.update({
   path: '/spotify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedManageRoute = AuthenticatedManageRouteImport.update({
   id: '/manage',
   path: '/manage',
@@ -60,6 +74,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedPlaylistsIndexRoute =
   AuthenticatedPlaylistsIndexRouteImport.update({
@@ -88,10 +107,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
   '/spotify': typeof SpotifyRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/manage': typeof AuthenticatedManageRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/playlists/$id': typeof AuthenticatedPlaylistsIdRoute
   '/project/$id': typeof AuthenticatedProjectIdRoute
   '/studio/new': typeof AuthenticatedStudioNewRoute
@@ -101,10 +123,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
   '/spotify': typeof SpotifyRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/manage': typeof AuthenticatedManageRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/playlists/$id': typeof AuthenticatedPlaylistsIdRoute
   '/project/$id': typeof AuthenticatedProjectIdRoute
   '/studio/new': typeof AuthenticatedStudioNewRoute
@@ -116,10 +141,13 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
+  '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
   '/spotify': typeof SpotifyRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/manage': typeof AuthenticatedManageRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/playlists/$id': typeof AuthenticatedPlaylistsIdRoute
   '/_authenticated/project/$id': typeof AuthenticatedProjectIdRoute
   '/_authenticated/studio/new': typeof AuthenticatedStudioNewRoute
@@ -131,10 +159,13 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/demo'
+    | '/mcp'
     | '/reset-password'
     | '/spotify'
+    | '/.well-known/oauth-protected-resource'
     | '/manage'
     | '/settings'
+    | '/.lovable/oauth/consent'
     | '/playlists/$id'
     | '/project/$id'
     | '/studio/new'
@@ -144,10 +175,13 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/demo'
+    | '/mcp'
     | '/reset-password'
     | '/spotify'
+    | '/.well-known/oauth-protected-resource'
     | '/manage'
     | '/settings'
+    | '/.lovable/oauth/consent'
     | '/playlists/$id'
     | '/project/$id'
     | '/studio/new'
@@ -158,10 +192,13 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/demo'
+    | '/mcp'
     | '/reset-password'
     | '/spotify'
+    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/manage'
     | '/_authenticated/settings'
+    | '/.lovable/oauth/consent'
     | '/_authenticated/playlists/$id'
     | '/_authenticated/project/$id'
     | '/_authenticated/studio/new'
@@ -173,8 +210,11 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   DemoRoute: typeof DemoRoute
+  McpRoute: typeof McpRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SpotifyRoute: typeof SpotifyRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -207,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -219,6 +266,13 @@ declare module '@tanstack/react-router' {
       path: '/spotify'
       fullPath: '/spotify'
       preLoaderRoute: typeof SpotifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/manage': {
@@ -234,6 +288,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/playlists/': {
       id: '/_authenticated/playlists/'
@@ -292,8 +353,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   DemoRoute: DemoRoute,
+  McpRoute: McpRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SpotifyRoute: SpotifyRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
