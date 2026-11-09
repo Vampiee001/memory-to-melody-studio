@@ -14,6 +14,8 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    plugins: [mcpPlugin()],
+    // The generator compares Vite's slash-normalized root with Windows-native paths.
+    // Use the checked-in MCP routes on Windows until the generator supports that path format.
+    plugins: process.platform === "win32" ? [] : [mcpPlugin()],
   },
 });
